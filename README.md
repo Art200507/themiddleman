@@ -1,36 +1,238 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 The Middle Man - Secure Digital Escrow Platform
 
-## Getting Started
+> **Professional escrow service for digital transactions with AI-powered fraud detection**
 
-First, run the development server:
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3957a1d1-3415-47bf-b659-5c93512c8e77/deploy-status)](https://themiddleman-escrow.netlify.app)
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.5-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0.0-blue)](https://reactjs.org/)
+[![Stripe](https://img.shields.io/badge/Stripe-Payment%20Processing-green)](https://stripe.com/)
 
+## 🌟 **Live Demo**
+**Visit:** [https://themiddleman-escrow.netlify.app](https://themiddleman-escrow.netlify.app)
+
+## 🎯 **What is The Middle Man?**
+
+**The Middle Man** is a secure digital escrow platform that acts as a trusted intermediary between buyers and sellers of digital products. It ensures safe, fraud-free transactions by holding payments securely until both parties are satisfied.
+
+### **Key Features:**
+- 🔒 **24-Hour Escrow Protection** - Money held securely until transaction completion
+- 🤖 **AI-Powered Fraud Detection** - Advanced security to prevent scams
+- 💳 **Secure Payment Processing** - Stripe integration for professional checkout
+- 📱 **Modern Web Application** - Built with Next.js and React 19
+- 🔐 **Google Authentication** - Secure user login and management
+- 📊 **Real-time Dashboard** - Track all your transactions
+- 🛡️ **Dispute Resolution** - Built-in system for handling conflicts
+
+## 🏗️ **Architecture & Tech Stack**
+
+### **Frontend:**
+- **Next.js 15** - React framework with server-side rendering
+- **React 19** - Latest React with modern features
+- **Tailwind CSS** - Utility-first CSS framework
+- **Responsive Design** - Works on all devices
+
+### **Backend & Services:**
+- **Firebase** - Authentication, database, and storage
+- **Stripe** - Payment processing and checkout
+- **AI Integration** - Fraud detection and dispute resolution
+- **Serverless Functions** - API endpoints and business logic
+
+### **Infrastructure:**
+- **Netlify** - Hosting and deployment
+- **CDN** - Global content delivery
+- **SSL/HTTPS** - Secure connections
+- **Auto-deployment** - Continuous integration
+
+## 🚀 **Quick Start**
+
+### **Prerequisites:**
+- Node.js 18+ 
+- npm or yarn
+- Firebase account
+- Stripe account
+
+### **Installation:**
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/themiddleman.git
+cd themiddleman
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your API keys
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### **Environment Variables:**
+Create a `.env.local` file with:
+```bash
+# Stripe Configuration
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_here
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔄 **How It Works**
 
-## Learn More
+### **1. Seller Uploads Digital Product**
+- Upload file with description and price
+- Set escrow terms and conditions
+- Product goes live on marketplace
 
-To learn more about Next.js, take a look at the following resources:
+### **2. Buyer Makes Purchase**
+- Browse available digital products
+- Select item and proceed to checkout
+- Complete payment through Stripe
+- **Payment held in escrow for 24 hours**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### **3. File Delivery & Review**
+- Buyer gets immediate access to file
+- 24-hour window to review and test
+- Can raise disputes if product doesn't match description
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### **4. Escrow Release**
+- **Automatic release** after 24 hours (if no disputes)
+- **Dispute resolution** if conflicts arise
+- AI-powered fraud detection helps investigations
 
-## Deploy on Vercel
+## 🛡️ **Security Features**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Escrow Protection** - Money held securely until completion
+- **Fraud Detection** - AI-powered scam prevention
+- **Secure Authentication** - Google OAuth integration
+- **Encrypted Storage** - All data encrypted at rest
+- **HTTPS Only** - Secure connections everywhere
+- **Input Validation** - Protection against malicious input
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 **User Experience**
+
+### **For Buyers:**
+- Browse digital products safely
+- Secure payment processing
+- Immediate file access after payment
+- 24-hour protection window
+- Easy dispute filing if needed
+
+### **For Sellers:**
+- Upload and manage digital products
+- Professional payment processing
+- Guaranteed payment after escrow period
+- Fraud protection for legitimate sales
+- Analytics and transaction history
+
+## 🚀 **Deployment**
+
+### **Netlify (Recommended):**
+```bash
+# Build the project
+npm run build
+
+# Deploy to Netlify
+netlify deploy --prod --dir=.next
+```
+
+### **Vercel:**
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+## 🧪 **Testing**
+
+### **Payment Testing:**
+Use Stripe test cards:
+- **Success:** `4242 4242 4242 4242`
+- **Decline:** `4000 0000 0000 0002`
+- **Requires Authentication:** `4000 0025 0000 3155`
+
+### **Development:**
+```bash
+# Run tests
+npm test
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## 📊 **Project Structure**
+
+```
+themiddleman/
+├── src/
+│   ├── app/                 # Next.js app router
+│   │   ├── api/            # API routes
+│   │   ├── dashboard/      # User dashboard
+│   │   ├── escrow/         # Escrow transactions
+│   │   └── upload/         # File upload
+│   ├── components/         # React components
+│   │   ├── AuthProvider.js # Authentication
+│   │   ├── PaymentForm.js # Stripe payment form
+│   │   └── ...            # Other components
+│   └── lib/               # Utility libraries
+│       ├── firebase.js    # Firebase configuration
+│       └── stripe.js      # Stripe configuration
+├── public/                # Static assets
+├── .env.local            # Environment variables
+└── README.md             # This file
+```
+
+## 🤝 **Contributing**
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### **Development Workflow:**
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 **Support**
+
+- **Documentation:** [https://themiddleman-escrow.netlify.app](https://themiddleman-escrow.netlify.app)
+- **Issues:** [GitHub Issues](https://github.com/yourusername/themiddleman/issues)
+- **Email:** support@themiddleman.com
+
+## 🙏 **Acknowledgments**
+
+- **Next.js** team for the amazing framework
+- **Stripe** for secure payment processing
+- **Firebase** for backend services
+- **Tailwind CSS** for beautiful styling
+- **Netlify** for hosting and deployment
+
+---
+
+## 🎉 **Get Started Today!**
+
+Ready to build the future of secure digital transactions? 
+
+**Visit:** [https://themiddleman-escrow.netlify.app](https://themiddleman-escrow.netlify.app)
+
+**Star this repo** if you find it helpful! ⭐
+
+---
+
+*Built with ❤️ for secure digital commerce*
