@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,11 +48,11 @@ export default function Dashboard() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'paid': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'disputed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30';
+      case 'paid': return 'bg-blue-900/30 text-blue-400 border-blue-500/30';
+      case 'completed': return 'bg-green-900/30 text-[#00ff88] border-[#00ff88]/30';
+      case 'disputed': return 'bg-red-900/30 text-red-400 border-red-500/30';
+      default: return 'bg-gray-900/30 text-gray-400 border-gray-500/30';
     }
   };
 
@@ -68,154 +69,165 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#00ff88] glow-green"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="w-16 h-16 bg-[#00ff88] rounded-full animate-pulse opacity-20"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
+  const currentTransactions = activeTab === 'selling'
+    ? (transactions.selling || [])
+    : (transactions.buying || []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-[#00ff88] rounded-full opacity-5 blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#00ff88] rounded-full opacity-5 blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="relative z-10 bg-black/50 backdrop-blur-xl border-b border-[#00ff88]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">The MiddleMan</h1>
-              <span className="ml-2 text-sm text-gray-500">Secure Escrow Service</span>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-green rounded-lg flex items-center justify-center glow-green">
+                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white text-glow-green">Dashboard</h1>
+                <span className="text-xs text-[#00ff88]">Manage Your Transactions</span>
+              </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">Welcome, {user.displayName}</span>
-              <button 
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-800 transition-colors"
+              <span className="text-sm text-gray-400">Welcome, <span className="text-[#00ff88]">{user.displayName}</span></span>
+              <Link
+                href="/upload"
+                className="btn-green px-6 py-2.5 rounded-lg font-semibold"
               >
-                Back to Home
+                Create Escrow
+              </Link>
+              <Link
+                href="/"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Home
+              </Link>
+              <button
+                onClick={logout}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Sign Out
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-lg shadow-sm">
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('selling')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'selling'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Selling ({transactions.selling?.length || 0})
-              </button>
-              <button
-                onClick={() => setActiveTab('buying')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'buying'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Buying ({transactions.buying?.length || 0})
-              </button>
-            </nav>
-          </div>
-
-          {/* Transactions List */}
-          <div className="p-6">
-            {activeTab === 'selling' ? (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Escrow Transactions</h2>
-                {transactions.selling?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">You haven't created any escrow transactions yet.</p>
-                    <button 
-                      onClick={() => router.push('/upload')}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Create Your First Transaction
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.selling?.map((transaction) => (
-                      <div key={transaction.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">{transaction.title}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{transaction.description}</p>
-                            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                              <span>Price: ${transaction.price}</span>
-                              <span>Created: {formatDate(transaction.createdAt)}</span>
-                              {transaction.buyerName && (
-                                <span>Buyer: {transaction.buyerName}</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                              {transaction.status.toUpperCase()}
-                            </span>
-                            <a 
-                              href={`/escrow/${transaction.transactionId}`}
-                              className="text-blue-600 hover:text-blue-800 text-sm"
-                            >
-                              View
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Purchases</h2>
-                {transactions.buying?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">You haven't made any purchases yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.buying?.map((transaction) => (
-                      <div key={transaction.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">{transaction.title}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{transaction.description}</p>
-                            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                              <span>Price: ${transaction.price}</span>
-                              <span>Paid: {formatDate(transaction.paidAt)}</span>
-                              <span>Seller: {transaction.sellerName}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                              {transaction.status.toUpperCase()}
-                            </span>
-                            <a 
-                              href={`/escrow/${transaction.transactionId}`}
-                              className="text-blue-600 hover:text-blue-800 text-sm"
-                            >
-                              View
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+      {/* Main Content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="flex space-x-4 border-b border-[#00ff88]/20">
+            <button
+              onClick={() => setActiveTab('selling')}
+              className={`px-6 py-3 font-semibold transition-all duration-300 ${
+                activeTab === 'selling'
+                  ? 'text-[#00ff88] border-b-2 border-[#00ff88] glow-green'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Selling ({transactions.selling?.length || 0})
+            </button>
+            <button
+              onClick={() => setActiveTab('buying')}
+              className={`px-6 py-3 font-semibold transition-all duration-300 ${
+                activeTab === 'buying'
+                  ? 'text-[#00ff88] border-b-2 border-[#00ff88] glow-green'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Buying ({transactions.buying?.length || 0})
+            </button>
           </div>
         </div>
+
+        {/* Transactions Grid */}
+        {currentTransactions.length === 0 ? (
+          <div className="card-dark p-12 rounded-2xl text-center">
+            <div className="w-24 h-24 bg-[#00ff88]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-12 h-12 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">No transactions yet</h3>
+            <p className="text-gray-400 mb-6">
+              {activeTab === 'selling'
+                ? 'Create your first escrow transaction to get started'
+                : 'You haven\'t purchased any products yet'}
+            </p>
+            {activeTab === 'selling' && (
+              <Link
+                href="/upload"
+                className="inline-block btn-green px-8 py-3 rounded-lg font-semibold"
+              >
+                Create New Escrow
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {currentTransactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="card-dark p-6 rounded-xl hover:scale-[1.02] transition-all duration-300"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">{transaction.productName}</h3>
+                    <p className="text-gray-400 text-sm">{transaction.description}</p>
+                  </div>
+                  <div className={`px-4 py-2 rounded-lg border ${getStatusColor(transaction.status)}`}>
+                    <span className="text-sm font-semibold uppercase">{transaction.status}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[#00ff88]/10">
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Amount</div>
+                    <div className="text-[#00ff88] font-bold text-lg">${transaction.amount}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Created</div>
+                    <div className="text-white font-semibold">{formatDate(transaction.createdAt)}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Transaction ID</div>
+                    <div className="text-gray-400 font-mono text-sm">{transaction.id.slice(0, 8)}...</div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Link
+                      href={`/escrow/${transaction.id}`}
+                      className="btn-outline-green px-4 py-2 rounded-lg text-sm font-semibold"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
-} 
+}
