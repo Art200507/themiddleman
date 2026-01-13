@@ -1,0 +1,40 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  uid VARCHAR(128) NOT NULL UNIQUE,
+  name VARCHAR(255),
+  email VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'seller',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  transaction_id VARCHAR(64) NOT NULL UNIQUE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  file_url TEXT,
+  file_name VARCHAR(255),
+  seller_id VARCHAR(128) NOT NULL,
+  seller_name VARCHAR(255),
+  seller_email VARCHAR(255),
+  status VARCHAR(32) NOT NULL DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  paid_at DATETIME NULL,
+  completed_at DATETIME NULL,
+  buyer_id VARCHAR(128) NULL,
+  buyer_name VARCHAR(255) NULL,
+  buyer_email VARCHAR(255) NULL,
+  dispute_raised_at DATETIME NULL,
+  dispute_reason VARCHAR(255) NULL,
+  dispute_description TEXT NULL,
+  dispute_raised_by VARCHAR(128) NULL,
+  dispute_raised_by_name VARCHAR(255) NULL,
+  payment_intent_id VARCHAR(255) NULL,
+  escrow_release_time DATETIME NULL,
+  fraud_analysis JSON NULL,
+  fraud_checked_at DATETIME NULL,
+  INDEX idx_transactions_seller_id (seller_id),
+  INDEX idx_transactions_buyer_id (buyer_id),
+  INDEX idx_transactions_transaction_id (transaction_id)
+);

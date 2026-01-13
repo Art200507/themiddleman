@@ -32,6 +32,9 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+
+# MySQL Configuration
+MYSQL_URL=mysql://user:password@localhost:3306/themiddleman
 ```
 
 ### Step 3: Test Payment

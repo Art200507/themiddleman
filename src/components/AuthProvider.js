@@ -2,8 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, signInWithPopup, provider, signOut } from '@/lib/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 const AuthContext = createContext();
 
@@ -20,20 +18,21 @@ export default function AuthProvider({ children }) {
       if (firebaseUser) {
         setUser(firebaseUser);
 
-        // Create or update user profile in Firestore
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const docSnap = await getDoc(userRef);
-
-        if (!docSnap.exists()) {
-          await setDoc(userRef, {
-            name: firebaseUser.displayName,
-            email: firebaseUser.email,
-            createdAt: serverTimestamp(),
-            role: "seller" // default role
+        try {
+          await fetch('/api/users/upsert', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uid: firebaseUser.uid,
+              name: firebaseUser.displayName,
+              email: firebaseUser.email,
+              role: 'seller'
+            }),
           });
-          console.log("User added to Firestore!");
-        } else {
-          console.log("User already exists in Firestore.");
+        } catch (error) {
+          console.error('User upsert failed:', error);
         }
       } else {
         setUser(null);

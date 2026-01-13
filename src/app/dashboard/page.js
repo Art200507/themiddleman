@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
@@ -21,31 +19,22 @@ export default function Dashboard() {
 
     const fetchTransactions = async () => {
       try {
-        const transactionsRef = collection(db, "transactions");
-        
-        // Get transactions where user is seller
-        const sellingQuery = query(
-          transactionsRef, 
-          where("sellerId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-        
-        // Get transactions where user is buyer
-        const buyingQuery = query(
-          transactionsRef, 
-          where("buyerId", "==", user.uid),
-          orderBy("paidAt", "desc")
-        );
-
-        const [sellingSnapshot, buyingSnapshot] = await Promise.all([
-          getDocs(sellingQuery),
-          getDocs(buyingQuery)
+        const [sellingResponse, buyingResponse] = await Promise.all([
+          fetch(`/api/transactions?sellerId=${encodeURIComponent(user.uid)}`),
+          fetch(`/api/transactions?buyerId=${encodeURIComponent(user.uid)}`)
         ]);
 
-        const sellingData = sellingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const buyingData = buyingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const sellingResult = await sellingResponse.json();
+        const buyingResult = await buyingResponse.json();
 
-        setTransactions({ selling: sellingData, buying: buyingData });
+        if (!sellingResponse.ok || !buyingResponse.ok) {
+          throw new Error('Failed to fetch transactions');
+        }
+
+        setTransactions({
+          selling: sellingResult.transactions,
+          buying: buyingResult.transactions
+        });
         setLoading(false);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -66,9 +55,11 @@ export default function Dashboard() {
     }
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'N/A';
-    return new Date(timestamp.toDate()).toLocaleDateString();
+  const formatDate = (value) => {
+    if (!value) return 'N/A';
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString();
   };
 
   if (!user) {

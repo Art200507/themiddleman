@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { execute, query } from '@/lib/mysql';
 import deepseekAI from '@/lib/deepseek';
+import { serializeTransaction } from '@/lib/transactions';
 
 export async function POST(request) {
   try {
@@ -14,29 +14,31 @@ export async function POST(request) {
       );
     }
 
-    // Fetch transaction data
-    const transactionsRef = collection(db, "transactions");
-    const q = query(transactionsRef, where("transactionId", "==", transactionId));
-    const querySnapshot = await getDocs(q);
+    const rows = await query(
+      'SELECT * FROM transactions WHERE transaction_id = ? LIMIT 1',
+      [transactionId]
+    );
 
-    if (querySnapshot.empty) {
+    if (!rows.length) {
       return NextResponse.json(
         { error: 'Transaction not found' },
         { status: 404 }
       );
     }
 
-    const transactionData = querySnapshot.docs[0].data();
+    const transactionData = serializeTransaction(rows[0]);
 
     // Perform AI fraud detection
     const fraudAnalysis = await deepseekAI.detectFraud(transactionData);
 
     // Update transaction with fraud analysis
-    const transactionRef = doc(db, "transactions", querySnapshot.docs[0].id);
-    await updateDoc(transactionRef, {
-      fraudAnalysis: fraudAnalysis,
-      fraudCheckedAt: serverTimestamp()
-    });
+    await execute(
+      `UPDATE transactions
+       SET fraud_analysis = ?,
+           fraud_checked_at = NOW()
+       WHERE transaction_id = ?`,
+      [JSON.stringify(fraudAnalysis), transactionId]
+    );
 
     return NextResponse.json({
       success: true,

@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import { use } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Elements } from '@stripe/react-stripe-js';
 import stripePromise from '@/lib/stripe';
 import PaymentForm from '@/components/PaymentForm';
@@ -24,24 +22,20 @@ export default function EscrowTransaction({ params }) {
   const [clientSecret, setClientSecret] = useState(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showDisputeForm, setShowDisputeForm] = useState(false);
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
-        // Query by transactionId instead of document ID
-        const transactionsRef = collection(db, "transactions");
-        const q = query(transactionsRef, where("transactionId", "==", id));
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
+        const response = await fetch(`/api/transactions?transactionId=${encodeURIComponent(id)}`);
+        const result = await response.json();
+
+        if (!response.ok) {
           setError("Transaction not found");
           setLoading(false);
           return;
         }
 
-        const transactionData = querySnapshot.docs[0].data();
-        setTransaction(transactionData);
+        setTransaction(result.transaction);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching transaction:", error);
@@ -84,6 +78,10 @@ export default function EscrowTransaction({ params }) {
       if (result.clientSecret) {
         setClientSecret(result.clientSecret);
         setShowPaymentForm(true);
+        setTransaction((prev) => ({
+          ...prev,
+          paymentIntentId: result.paymentIntentId
+        }));
       } else {
         alert("Failed to create payment. Please try again.");
       }

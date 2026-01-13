@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { execute, query } from '@/lib/mysql';
 
 export async function POST(request) {
   try {
@@ -14,20 +13,19 @@ export async function POST(request) {
       );
     }
 
-    // Find the transaction
-    const transactionsRef = collection(db, "transactions");
-    const q = query(transactionsRef, where("transactionId", "==", transactionId));
-    const querySnapshot = await getDocs(q);
+    const rows = await query(
+      'SELECT * FROM transactions WHERE transaction_id = ? LIMIT 1',
+      [transactionId]
+    );
 
-    if (querySnapshot.empty) {
+    if (!rows.length) {
       return NextResponse.json(
         { error: 'Transaction not found' },
         { status: 404 }
       );
     }
 
-    const transactionDoc = querySnapshot.docs[0];
-    const transactionData = transactionDoc.data();
+    const transactionData = rows[0];
 
     // Check if transaction is in paid status
     if (transactionData.status !== 'paid') {
@@ -38,7 +36,7 @@ export async function POST(request) {
     }
 
     // Check if buyer is the one raising the dispute
-    if (transactionData.buyerId !== buyerId) {
+    if (transactionData.buyer_id !== buyerId) {
       return NextResponse.json(
         { error: 'Only the buyer can raise a dispute' },
         { status: 403 }
@@ -46,9 +44,9 @@ export async function POST(request) {
     }
 
     // Check if dispute is within 24 hours
-    const paidAt = transactionData.paidAt?.toDate();
+    const paidAt = transactionData.paid_at ? new Date(transactionData.paid_at) : null;
     const now = new Date();
-    const hoursSincePayment = (now - paidAt) / (1000 * 60 * 60);
+    const hoursSincePayment = paidAt ? (now - paidAt) / (1000 * 60 * 60) : Infinity;
 
     if (hoursSincePayment > 24) {
       return NextResponse.json(
@@ -58,7 +56,7 @@ export async function POST(request) {
     }
 
     // Check if dispute already exists
-    if (transactionData.disputeRaisedAt) {
+    if (transactionData.dispute_raised_at) {
       return NextResponse.json(
         { error: 'Dispute already raised for this transaction' },
         { status: 400 }
@@ -66,15 +64,17 @@ export async function POST(request) {
     }
 
     // Update transaction with dispute information
-    const transactionRef = doc(db, "transactions", transactionDoc.id);
-    await updateDoc(transactionRef, {
-      status: 'disputed',
-      disputeRaisedAt: serverTimestamp(),
-      disputeReason: reason,
-      disputeDescription: description,
-      disputeRaisedBy: buyerId,
-      disputeRaisedByName: buyerName
-    });
+    await execute(
+      `UPDATE transactions
+       SET status = 'disputed',
+           dispute_raised_at = NOW(),
+           dispute_reason = ?,
+           dispute_description = ?,
+           dispute_raised_by = ?,
+           dispute_raised_by_name = ?
+       WHERE transaction_id = ?`,
+      [reason, description, buyerId, buyerName, transactionId]
+    );
 
     return NextResponse.json({
       success: true,

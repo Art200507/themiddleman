@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { db, storage } from '@/lib/firebase';
+import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 export default function UploadProduct() {
@@ -57,36 +56,35 @@ export default function UploadProduct() {
       const snapshot = await uploadBytes(fileRef, file);
       const fileURL = await getDownloadURL(snapshot.ref);
 
-      // Generate unique transaction ID
-      const uniqueId = `escrow_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // Create transaction in Firestore
-      const transactionRef = await addDoc(collection(db, "transactions"), {
-        transactionId: uniqueId,
-        title,
-        description,
-        price: parseFloat(price),
-        fileURL,
-        fileName: file.name,
-        sellerId: user.uid,
-        sellerName: user.displayName,
-        sellerEmail: user.email,
-        status: 'pending', // pending, paid, completed, disputed
-        createdAt: serverTimestamp(),
-        paidAt: null,
-        completedAt: null,
-        buyerId: null,
-        buyerName: null,
-        buyerEmail: null,
-        disputeRaisedAt: null,
-        disputeReason: null
+      // Create transaction in MySQL
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          price: parseFloat(price),
+          fileURL,
+          fileName: file.name,
+          sellerId: user.uid,
+          sellerName: user.displayName,
+          sellerEmail: user.email,
+        }),
       });
 
-      setTransactionId(uniqueId);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create transaction');
+      }
+
+      setTransactionId(result.transactionId);
       setLoading(false);
 
       // Show success message with link
-      alert(`Escrow transaction created successfully! Your transaction ID is: ${uniqueId}`);
+      alert(`Escrow transaction created successfully! Your transaction ID is: ${result.transactionId}`);
       
     } catch (error) {
       console.error("Error creating transaction:", error);

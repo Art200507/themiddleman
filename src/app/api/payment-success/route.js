@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { execute, query } from '@/lib/mysql';
 
 export async function POST(request) {
   try {
@@ -14,31 +13,30 @@ export async function POST(request) {
       );
     }
 
-    // Find the transaction document by transactionId
-    const transactionsRef = collection(db, "transactions");
-    const q = query(transactionsRef, where("transactionId", "==", transactionId));
-    const querySnapshot = await getDocs(q);
+    const rows = await query(
+      'SELECT id FROM transactions WHERE transaction_id = ? LIMIT 1',
+      [transactionId]
+    );
 
-    if (querySnapshot.empty) {
+    if (!rows.length) {
       return NextResponse.json(
         { error: 'Transaction not found' },
         { status: 404 }
       );
     }
 
-    const transactionDoc = querySnapshot.docs[0];
-    const transactionRef = doc(db, "transactions", transactionDoc.id);
-
-    // Update transaction status to paid
-    await updateDoc(transactionRef, {
-      status: 'paid',
-      buyerId,
-      buyerName,
-      buyerEmail,
-      paidAt: serverTimestamp(),
-      paymentIntentId,
-      escrowReleaseTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
-    });
+    await execute(
+      `UPDATE transactions
+       SET status = 'paid',
+           buyer_id = ?,
+           buyer_name = ?,
+           buyer_email = ?,
+           paid_at = NOW(),
+           payment_intent_id = ?,
+           escrow_release_time = DATE_ADD(NOW(), INTERVAL 24 HOUR)
+       WHERE transaction_id = ?`,
+      [buyerId, buyerName, buyerEmail, paymentIntentId, transactionId]
+    );
 
     return NextResponse.json({
       success: true,
