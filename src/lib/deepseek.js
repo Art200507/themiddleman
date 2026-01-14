@@ -1,4 +1,4 @@
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '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';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 export class DeepSeekAI {
