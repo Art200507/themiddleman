@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
@@ -21,8 +23,8 @@ export default function Dashboard() {
     const fetchTransactions = async () => {
       try {
         const [sellingResponse, buyingResponse] = await Promise.all([
-          fetch(`/api/transactions?sellerId=${encodeURIComponent(user.uid)}`),
-          fetch(`/api/transactions?buyerId=${encodeURIComponent(user.uid)}`)
+          authFetch(`/api/transactions?sellerId=${encodeURIComponent(user.uid)}`),
+          authFetch(`/api/transactions?buyerId=${encodeURIComponent(user.uid)}`)
         ]);
 
         const sellingResult = await sellingResponse.json();

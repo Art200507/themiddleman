@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { use } from 'react';
@@ -26,7 +28,7 @@ export default function EscrowTransaction({ params }) {
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
-        const response = await fetch(`/api/transactions?transactionId=${encodeURIComponent(id)}`);
+        const response = await authFetch(`/api/transactions?transactionId=${encodeURIComponent(id)}`);
         const result = await response.json();
 
         if (!response.ok) {
@@ -45,7 +47,7 @@ export default function EscrowTransaction({ params }) {
     };
 
     fetchTransaction();
-  }, [id]);
+  }, [id, user?.uid]);
 
   const handlePayment = async () => {
     if (!user) {
@@ -62,13 +64,13 @@ export default function EscrowTransaction({ params }) {
 
     try {
       // Create payment intent
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await authFetch('/api/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: transaction.price,
+          transactionId: transaction.transactionId,
           currency: 'usd',
         }),
       });

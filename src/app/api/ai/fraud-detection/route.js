@@ -1,3 +1,4 @@
+import { authenticate } from '@/lib/server-auth';
 import { NextResponse } from 'next/server';
 import { execute, query } from '@/lib/mysql';
 import deepseekAI from '@/lib/deepseek';
@@ -5,6 +6,7 @@ import { serializeTransaction } from '@/lib/transactions';
 
 export async function POST(request) {
   try {
+    const user = await authenticate(request);
     const { transactionId } = await request.json();
 
     if (!transactionId) {
@@ -26,6 +28,7 @@ export async function POST(request) {
       );
     }
 
+    if (![rows[0].seller_id,rows[0].buyer_id].includes(user.uid)) return NextResponse.json({error:'Access denied'},{status:403});
     const transactionData = serializeTransaction(rows[0]);
 
     // Perform AI fraud detection
@@ -49,7 +52,7 @@ export async function POST(request) {
     console.error('Fraud detection error:', error);
     return NextResponse.json(
       { error: 'Failed to perform fraud detection' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 } 

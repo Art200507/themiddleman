@@ -43,3 +43,10 @@ export const serializeTransaction = (row) => ({
   fraudAnalysis: parseFraudAnalysis(row.fraud_analysis),
   fraudCheckedAt: toIsoString(row.fraud_checked_at)
 });
+
+export function publicTransaction(row,uid) {
+ const data=serializeTransaction(row);
+ const owner=uid && (row.seller_id===uid || row.buyer_id===uid);
+ if(!owner)for(const key of ['fileURL','sellerEmail','buyerId','buyerName','buyerEmail','paymentIntentId','disputeDescription','disputeReason','disputeRaisedBy','disputeRaisedByName','fraudAnalysis'])delete data[key];
+ return data;
+}

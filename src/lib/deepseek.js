@@ -9,8 +9,10 @@ export class DeepSeekAI {
 
   async makeRequest(messages, model = 'deepseek-chat') {
     try {
+      if(!this.apiKey)throw Object.assign(new Error('AI support is not configured'),{status:503});
       const response = await fetch(this.apiUrl, {
         method: 'POST',
+        signal: AbortSignal.timeout(25000),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`

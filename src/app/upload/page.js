@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
@@ -57,7 +59,7 @@ export default function UploadProduct() {
       const fileURL = await getDownloadURL(snapshot.ref);
 
       // Create transaction in MySQL
-      const response = await fetch('/api/transactions', {
+      const response = await authFetch('/api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

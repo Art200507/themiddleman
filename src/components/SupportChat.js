@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
@@ -47,7 +49,7 @@ export default function SupportChat({ isOpen, onClose }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/ai/support-chat', {
+      const response = await authFetch('/api/ai/support-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

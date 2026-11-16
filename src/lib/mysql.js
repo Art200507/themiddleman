@@ -19,8 +19,7 @@ const pool = globalForMySQL._mysqlPool;
 
 export async function execute(sql, params = []) {
   if (!pool) {
-    console.warn('MySQL not configured - operation skipped');
-    return { affectedRows: 0 };
+    throw Object.assign(new Error('Database is not configured'),{status:503});
   }
   const [result] = await pool.execute(sql, params);
   return result;
@@ -28,8 +27,7 @@ export async function execute(sql, params = []) {
 
 export async function query(sql, params = []) {
   if (!pool) {
-    console.warn('MySQL not configured - returning empty results');
-    return [];
+    throw Object.assign(new Error('Database is not configured'),{status:503});
   }
   const [rows] = await pool.execute(sql, params);
   return rows;

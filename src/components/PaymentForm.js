@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
@@ -44,7 +46,7 @@ export default function PaymentForm({ transaction, onSuccess, onError }) {
       }
 
       // Payment successful - update transaction in database
-      const response = await fetch('/api/payment-success', {
+      const response = await authFetch('/api/payment-success', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

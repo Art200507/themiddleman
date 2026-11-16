@@ -1,10 +1,13 @@
+import { authenticate } from '@/lib/server-auth';
 import { NextResponse } from 'next/server';
 import { execute, query } from '@/lib/mysql';
 
 export async function POST(request) {
   try {
-    const { transactionId, reason, description, buyerId, buyerName } = await request.json();
+    const user = await authenticate(request);
+    const { transactionId, reason, description } = await request.json();
 
+    const buyerId=user.uid,buyerName=user.name;
     // Validate the request
     if (!transactionId || !reason || !description || !buyerId) {
       return NextResponse.json(
@@ -85,7 +88,7 @@ export async function POST(request) {
     console.error('Error raising dispute:', error);
     return NextResponse.json(
       { error: 'Failed to raise dispute' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 } 

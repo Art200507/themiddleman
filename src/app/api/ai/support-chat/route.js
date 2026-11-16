@@ -1,11 +1,13 @@
+import { authenticate } from '@/lib/server-auth';
 import { NextResponse } from 'next/server';
 import deepseekAI from '@/lib/deepseek';
 
 export async function POST(request) {
   try {
+    const user = await authenticate(request);
     const { message, context = {} } = await request.json();
 
-    if (!message) {
+    if (typeof message!=='string'||!message.trim()||message.length>4000) {
       return NextResponse.json(
         { error: 'Message is required' },
         { status: 400 }
@@ -24,7 +26,7 @@ export async function POST(request) {
     console.error('Support chat error:', error);
     return NextResponse.json(
       { error: 'Failed to get support response' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 } 

@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
@@ -20,7 +22,7 @@ export default function DisputeForm({ transaction, onDisputeRaised, onCancel }) 
     setLoading(true);
 
     try {
-      const response = await fetch('/api/raise-dispute', {
+      const response = await authFetch('/api/raise-dispute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

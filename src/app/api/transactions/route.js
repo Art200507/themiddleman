@@ -1,12 +1,14 @@
+import { authenticate } from '@/lib/server-auth';
 import { NextResponse } from 'next/server';
 import { execute, query } from '@/lib/mysql';
-import { serializeTransaction } from '@/lib/transactions';
+import { publicTransaction } from '@/lib/transactions';
 
 const generateTransactionId = () =>
   `escrow_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
 export async function POST(request) {
   try {
+    const user = await authenticate(request);
     const {
       transactionId,
       title,
@@ -14,11 +16,11 @@ export async function POST(request) {
       price,
       fileURL,
       fileName,
-      sellerId,
-      sellerName,
-      sellerEmail
+
     } = await request.json();
 
+    const sellerId=user.uid,sellerName=user.name,sellerEmail=user.email;
+    if (!Number.isFinite(Number(price)) || Number(price)<=0 || Number(price)>10000) return NextResponse.json({error:'Invalid price'},{status:400});
     if (!title || !description || !price || !fileURL || !fileName || !sellerId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -53,13 +55,15 @@ export async function POST(request) {
     console.error('Error creating transaction:', error);
     return NextResponse.json(
       { error: 'Failed to create transaction' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 }
 
 export async function GET(request) {
   try {
+    const hasToken=request.headers.has('authorization');
+    const user=hasToken?await authenticate(request):null;
     const { searchParams } = new URL(request.url);
     const transactionId = searchParams.get('transactionId');
     const sellerId = searchParams.get('sellerId');
@@ -79,10 +83,12 @@ export async function GET(request) {
       }
 
       return NextResponse.json({
-        transaction: serializeTransaction(rows[0])
+        transaction: publicTransaction(rows[0],user?.uid)
       });
     }
 
+    if (!user) return NextResponse.json({error:'Sign in required'},{status:401});
+    if ((sellerId && sellerId!==user.uid)||(buyerId && buyerId!==user.uid)) return NextResponse.json({error:'Access denied'},{status:403});
     if (sellerId) {
       const rows = await query(
         'SELECT * FROM transactions WHERE seller_id = ? ORDER BY created_at DESC',
@@ -90,7 +96,7 @@ export async function GET(request) {
       );
 
       return NextResponse.json({
-        transactions: rows.map(serializeTransaction)
+        transactions: rows.map(row=>publicTransaction(row,user.uid))
       });
     }
 
@@ -101,7 +107,7 @@ export async function GET(request) {
       );
 
       return NextResponse.json({
-        transactions: rows.map(serializeTransaction)
+        transactions: rows.map(row=>publicTransaction(row,user.uid))
       });
     }
 
@@ -113,7 +119,7 @@ export async function GET(request) {
     console.error('Error fetching transactions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch transactions' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 }

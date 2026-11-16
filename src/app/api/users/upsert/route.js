@@ -1,9 +1,11 @@
+import { authenticate } from '@/lib/server-auth';
 import { NextResponse } from 'next/server';
 import { execute } from '@/lib/mysql';
 
 export async function POST(request) {
   try {
-    const { uid, name, email, role } = await request.json();
+    const user = await authenticate(request);
+    const {uid,name,email}=user; const role='seller';
 
     if (!uid || !email) {
       return NextResponse.json(
@@ -27,7 +29,7 @@ export async function POST(request) {
     console.error('Error upserting user:', error);
     return NextResponse.json(
       { error: 'Failed to upsert user' },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 }

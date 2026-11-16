@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { useState } from 'react';
 
@@ -12,7 +14,7 @@ export default function FraudDetection({ transaction, onAnalysisComplete }) {
     setError(null);
 
     try {
-      const response = await fetch('/api/ai/fraud-detection', {
+      const response = await authFetch('/api/ai/fraud-detection', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

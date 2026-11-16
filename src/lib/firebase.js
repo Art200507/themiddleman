@@ -12,9 +12,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const configured=Boolean(firebaseConfig.apiKey&&firebaseConfig.projectId&&firebaseConfig.authDomain&&firebaseConfig.appId);
+const app = configured ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
 const provider = new GoogleAuthProvider();
-const storage = getStorage(app);
+const storage = app ? getStorage(app) : null;
 
 export { auth, provider, signInWithPopup, signOut, storage };

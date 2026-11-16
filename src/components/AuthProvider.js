@@ -1,4 +1,6 @@
 'use client';
+import { authFetch } from '@/lib/auth-fetch';
+
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, signInWithPopup, provider, signOut } from '@/lib/firebase';
@@ -14,12 +16,13 @@ export default function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if(!auth){setLoading(false);return;}
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
 
         try {
-          await fetch('/api/users/upsert', {
+          await authFetch('/api/users/upsert', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -45,6 +48,7 @@ export default function AuthProvider({ children }) {
 
   const login = async () => {
     try {
+      if(!auth){alert('Sign-in is not configured yet.');return;}
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Login error:", error);
